@@ -1,5 +1,5 @@
 {
-  "engine": "mongodb",
+  "engine": "couchdb",
   "operation": "remove_field",
   "field": "edad"
 }
