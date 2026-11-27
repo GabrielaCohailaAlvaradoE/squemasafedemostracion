@@ -1,0 +1,20 @@
+name: SchemaSafe
+
+# Demo en vivo: cada pull request que cambia schema-change.json recibe el análisis como comentario.
+# Usa solo el GITHUB_TOKEN automático del workflow; no hay secretos ni tokens que crear.
+on:
+  pull_request:
+    paths:
+      - "schema-change.json"
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./

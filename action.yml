@@ -1,0 +1,73 @@
+name: "SchemaSafe NoSQL schema review"
+description: "Analiza en solo lectura el riesgo de un cambio de esquema NoSQL y lo comenta en el pull request."
+author: "SchemaSafe NoSQL"
+branding:
+  icon: "shield"
+  color: "green"
+
+inputs:
+  change-file:
+    description: "Archivo JSON con el cambio propuesto (engine, resource, operation, field, target_type)."
+    required: false
+    default: "schema-change.json"
+  engine:
+    description: "Motor (mongodb, couchdb o cassandra). Reemplaza el valor del archivo."
+    required: false
+    default: ""
+  resource:
+    description: "Colección, base o tabla. Reemplaza el valor del archivo."
+    required: false
+    default: ""
+  operation:
+    description: "Operación (remove_field, rename_field, change_type, require_field...). Reemplaza el valor del archivo."
+    required: false
+    default: ""
+  field:
+    description: "Campo afectado. Reemplaza el valor del archivo."
+    required: false
+    default: ""
+  target-type:
+    description: "Tipo destino para change_type. Reemplaza el valor del archivo."
+    required: false
+    default: ""
+  pr-number:
+    description: "Pull request donde comentar. Por defecto, el del evento."
+    required: false
+    default: ${{ github.event.pull_request.number }}
+  github-token:
+    description: "Token con permiso para comentar. Por defecto, el GITHUB_TOKEN automático del workflow: no hay que crear ninguno."
+    required: false
+    default: ${{ github.token }}
+  dry-run:
+    description: "true para mostrar el comentario en el log sin publicarlo."
+    required: false
+    default: "false"
+  schemasafe-version:
+    description: "Versión del CLI schemasafe de PyPI."
+    required: false
+    default: "0.2.0"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Instalar el CLI schemasafe desde PyPI
+      shell: bash
+      env:
+        SCHEMASAFE_VERSION: ${{ inputs.schemasafe-version }}
+      run: python -m pip install --disable-pip-version-check --no-input "schemasafe==${SCHEMASAFE_VERSION}"
+    - name: Analizar el cambio y comentar el resultado
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_CHANGE_FILE: ${{ inputs.change-file }}
+        INPUT_ENGINE: ${{ inputs.engine }}
+        INPUT_RESOURCE: ${{ inputs.resource }}
+        INPUT_OPERATION: ${{ inputs.operation }}
+        INPUT_FIELD: ${{ inputs.field }}
+        INPUT_TARGET_TYPE: ${{ inputs.target-type }}
+        INPUT_PR_NUMBER: ${{ inputs.pr-number }}
+        INPUT_DRY_RUN: ${{ inputs.dry-run }}
+      run: python "${GITHUB_ACTION_PATH}/run_review.py"

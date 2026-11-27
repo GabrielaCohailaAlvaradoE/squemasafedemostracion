@@ -1,0 +1,7 @@
+{
+  "engine": "mongodb",
+  "resource": "demo",
+  "operation": "change_type",
+  "field": "edad",
+  "target_type": "string"
+}
